@@ -116,15 +116,16 @@ function doPost(e) {
 
     // 삭제 요청 처리
     if (params.action === 'delete') {
-      const idToDelete = params.id;
-      const data = sheet.getDataRange().getValues();
+      const idToDelete = String(params.id).trim(); // 문자열 변환 및 공백 제거
+      const data = sheet.getDataRange().getDisplayValues(); // 화면에 보이는 값(문자열)으로 가져오기
+      
       for (let i = 1; i < data.length; i++) {
-        if (data[i][0] === idToDelete) {
+        if (data[i][0].toString().trim() === idToDelete) {
           sheet.deleteRow(i + 1);
           return createJsonResponse({ success: true, message: '기록이 삭제되었습니다.' });
         }
       }
-      return createJsonResponse({ success: false, error: '해당 ID를 찾을 수 없습니다.' });
+      return createJsonResponse({ success: false, error: '해당 ID를 찾을 수 없습니다. (ID: ' + idToDelete + ')' });
     }
 
     // 필수 필드 검증
