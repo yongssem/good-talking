@@ -698,6 +698,58 @@ body::after {
   margin-bottom: 24px;
 }
 
+/* 개인별 통계 그리드 */
+.individual-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.speaker-stat-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  transition: transform var(--transition-smooth);
+}
+
+.speaker-stat-card:hover {
+  transform: scale(1.02);
+}
+
+.speaker-stat-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.speaker-stat-total {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+}
+
+.speaker-stat-total .unit {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 2px;
+}
+
+.speaker-stat-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.speaker-stat-meta .label {
+  color: var(--text-muted);
+}
+
 .summary-item {
   background: #fff;
   border: none;

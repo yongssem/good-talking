@@ -601,9 +601,70 @@ function updateDashboard() {
   if (state.records.length === 0) return;
 
   updateSummaryStats();
+  updateIndividualStats(); // 개인별 통계 추가
   updateDonutChart();
   updateHistogram();
   updateRecordList();
+}
+
+/**
+ * 개인별 통계 업데이트
+ */
+function updateIndividualStats() {
+  const gridEl = document.getElementById('individual-stats-grid');
+  if (!gridEl) return;
+
+  const speakers = ['유회장', '용쌤', '고영주', '고영은'];
+  const speakerStats = {};
+
+  // 초기화
+  speakers.forEach(s => {
+    speakerStats[s] = {
+      total: 0,
+      scores: [],
+      categories: {}
+    };
+  });
+
+  // 데이터 집계
+  state.records.forEach(r => {
+    if (speakerStats[r.발화자]) {
+      speakerStats[r.발화자].total++;
+      speakerStats[r.발화자].scores.push(Number(r.감정점수));
+      speakerStats[r.발화자].categories[r.카테고리] = (speakerStats[r.발화자].categories[r.카테고리] || 0) + 1;
+    }
+  });
+
+  // 렌더링
+  gridEl.innerHTML = speakers.map(s => {
+    const stat = speakerStats[s];
+    const avgScore = stat.scores.length > 0
+      ? (stat.scores.reduce((a, b) => a + b, 0) / stat.scores.length).toFixed(1)
+      : '-';
+
+    // 가장 많이 나온 카테고리
+    let topCategory = '-';
+    let maxCount = 0;
+    for (const cat in stat.categories) {
+      if (stat.categories[cat] > maxCount) {
+        maxCount = stat.categories[cat];
+        topCategory = cat;
+      }
+    }
+
+    const emoji = s === '유회장' ? '👩' : s === '용쌤' ? '👨' : s === '고영주' ? '👧' : '👶';
+
+    return `
+      <div class="speaker-stat-card">
+        <div class="speaker-stat-name">${emoji} ${s}</div>
+        <div class="speaker-stat-total">${stat.total}<span class="unit">건</span></div>
+        <div class="speaker-stat-meta">
+          <div><span class="label">평균 강도:</span> ${avgScore}</div>
+          <div><span class="label">주요 유형:</span> ${topCategory}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 /**
