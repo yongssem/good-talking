@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="우리 가족의 소중한 대화를 기록하고 분석하여 더 행복한 소통을 만들어갑니다.">
+  <meta name="theme-color" content="#0f0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>우리집 소통 버튼 - 따뜻한 우리 가족 기록</title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- 스타일시트 -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="app-container">
+
+    <!-- ========================
+         홈 화면 (빠른 입력)
+         ======================== -->
+    <section id="view-home" class="view home-view active">
+      <div class="home-logo">🏡</div>
+      <h1 class="home-title">우리집 소통 버튼</h1>
+      <p class="home-subtitle">
+        유회장님네 가족의 소중한 대화를 기록하고<br>
+        더 따뜻하게 소통해보아요! ✨
+      </p>
+
+      <button class="btn-record" id="btn-start-record">
+        <span class="icon">💬</span>
+        <span class="label">소통 기록</span>
+      </button>
+
+      <div class="today-count" id="today-count">
+        오늘 기록: <strong id="today-count-value">0</strong>건
+      </div>
+
+      <!-- 관리자 모드 버튼 -->
+      <button id="btn-admin-mode" class="btn-admin-mode" onclick="toggleAdminMode()">
+        🔒 관리자 오프
+      </button>
+    </section>
+
+    <!-- ========================
+         입력 폼 뷰
+         ======================== -->
+    <section id="view-form" class="view form-view">
+      <div class="compact-form-header">
+        <button class="btn-back-small" id="btn-form-back" aria-label="뒤로 가기">✕</button>
+        <div class="timestamp-mini" id="current-time">2026-02-13 23:53:00</div>
+      </div>
+
+      <form id="conflict-form" autocomplete="off">
+        <!-- 발화자 (칩 스타일로 변경) -->
+        <div class="form-group-compact">
+          <div class="speaker-chips">
+            <div class="chip-option">
+              <input type="radio" name="speaker" id="speaker-me" value="유회장" required>
+              <label for="speaker-me" class="chip-label">👩 유회장</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" name="speaker" id="speaker-spouse" value="용쌤">
+              <label for="speaker-spouse" class="chip-label">👨 용쌤</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" name="speaker" id="speaker-youngju" value="고영주">
+              <label for="speaker-youngju" class="chip-label">👧 고영주</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" name="speaker" id="speaker-youngun" value="고영은">
+              <label for="speaker-youngun" class="chip-label">👶 고영은</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group-compact">
+          <textarea class="form-textarea-compact" id="content" name="content" placeholder="어떤 말이 오갔나요? (음성 입력 가능 🎤)"
+            required rows="3"></textarea>
+        </div>
+
+        <!-- 카테고리 -->
+        <div class="form-group-compact">
+          <div class="category-grid" id="category-grid">
+            <button type="button" class="category-btn" data-value="비난">😤 비난</button>
+            <button type="button" class="category-btn" data-value="무시">😶 무시</button>
+            <button type="button" class="category-btn" data-value="욕설">🤬 욕설</button>
+            <button type="button" class="category-btn" data-value="짜증">😒 짜증</button>
+            <button type="button" class="category-btn" data-value="기타">💬 기타</button>
+          </div>
+          <input type="hidden" id="category" name="category" required>
+        </div>
+
+        <!-- 감정점수 -->
+        <div class="form-group-compact">
+          <div class="score-container">
+            <div class="score-display">
+              <span class="score-value" id="score-display-value">3</span>
+              <span class="score-label" id="score-display-label">보통</span>
+            </div>
+            <div class="score-buttons" id="score-buttons">
+              <button type="button" class="score-btn" data-value="1">1</button>
+              <button type="button" class="score-btn" data-value="2">2</button>
+              <button type="button" class="score-btn selected" data-value="3">3</button>
+              <button type="button" class="score-btn" data-value="4">4</button>
+              <button type="button" class="score-btn" data-value="5">5</button>
+            </div>
+          </div>
+          <input type="hidden" id="score" name="score" value="3">
+        </div>
+
+        <!-- 저장 버튼 -->
+        <button type="submit" class="btn-save" id="btn-save">
+          💾 기록 저장
+        </button>
+      </form>
+    </section>
+
+    <!-- ========================
+         통계 대시보드
+         ======================== -->
+    <section id="view-stats" class="view stats-view">
+      <div class="stats-header">
+        <h2>📊 통계 대시보드</h2>
+        <p>대화 패턴을 분석합니다</p>
+      </div>
+
+      <!-- 요약 통계 -->
+      <div class="stats-summary" id="stats-summary">
+        <div class="summary-item">
+          <div class="value" id="stat-total">0</div>
+          <div class="label">전체 기록</div>
+        </div>
+        <div class="summary-item">
+          <div class="value" id="stat-week">0</div>
+          <div class="label">이번 주</div>
+        </div>
+        <div class="summary-item">
+          <div class="value" id="stat-avg-score">-</div>
+          <div class="label">평균 강도</div>
+        </div>
+      </div>
+
+      <!-- 도넛 차트: 카테고리별 비율 -->
+      <div class="stats-card">
+        <h3><span class="icon">🍩</span> 카테고리별 비율</h3>
+        <div class="chart-container">
+          <canvas id="chart-donut"></canvas>
+        </div>
+      </div>
+
+      <!-- 히스토그램: 기간별 발생 건수 -->
+      <div class="stats-card">
+        <h3><span class="icon">📈</span> 기간별 발생 건수</h3>
+        <div class="period-toggle" id="period-toggle">
+          <button class="period-btn active" data-period="daily">일간</button>
+          <button class="period-btn" data-period="weekly">주간</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-histogram"></canvas>
+        </div>
+      </div>
+
+      <!-- 최근 기록 리스트 -->
+      <div class="stats-card">
+        <div class="recent-records">
+          <div class="records-header">
+            <h3><span class="icon">📜</span> 전체 소통 내역</h3>
+            <button id="admin-batch-delete" class="btn-batch-delete" style="display: none;"
+              onclick="deleteSelectedRecords()">선택 삭제</button>
+          </div>
+          <ul id="records-list">
+            <!-- JS로 동적 렌더링 -->
+          </ul>
+        </div>
+    </section>
+
+  </div><!-- /.app-container -->
+
+  <!-- 하단 네비게이션 바 -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-view="home" aria-label="홈">
+      <span class="icon">🏠</span>
+      <span>홈</span>
+    </button>
+    <button class="nav-item" data-view="stats" aria-label="통계">
+      <span class="icon">📊</span>
+      <span>통계</span>
+    </button>
+  </nav>
+
+  <!-- 토스트 알림 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 앱 스크립트 -->
+  <script src="app.js"></script>
+</body>
+
+</html>
