@@ -8,15 +8,19 @@
 // ============================================
 // ★ 중요: 아래 URL을 Google Apps Script 배포 URL로 교체하세요!
 // ============================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbx8PsIG6sMXXefhLIrH8014YLvZkmJIi1jw7JIrPU8WqreXAe57sDZ_N00IDbiA17Nagg/exec';
-// 예시: 'https://script.google.com/macros/s/AKfycbx.../exec'
+const API_URL = '';
+// localStorage 저장 모드 (각 기기 브라우저에 로컬 저장)
 
 // ============================================
 // 상태 관리
 // ============================================
+const SPEAKERS_KEY = 'nabumalbutton_speakers';
+const DEFAULT_EMOJIS = ['👩', '👨', '👧', '👶', '🧒', '👴', '👵', '🐶', '🐱'];
+
 const state = {
   currentView: 'home',     // 현재 보이는 뷰
   records: [],             // 전체 기록 데이터
+  speakers: [],            // 발화자 목록 [{name, emoji}]
   selectedCategory: null,  // 선택된 카테고리
   selectedScore: 3,        // 선택된 감정점수
   isLoading: false,        // 로딩 상태
@@ -61,6 +65,8 @@ const CATEGORY_EMOJI = {
 // 초기화
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
+  loadSpeakers();
+  renderSpeakerChips();
   initNavigation();
   initForm();
   initTimestamp();
@@ -522,6 +528,151 @@ async function deleteRecordQuietly(id) {
 }
 
 // ============================================
+// 발화자 관리
+// ============================================
+function loadSpeakers() {
+  const stored = localStorage.getItem(SPEAKERS_KEY);
+  if (stored) {
+    try {
+      state.speakers = JSON.parse(stored);
+    } catch (e) {
+      state.speakers = [];
+    }
+  }
+}
+
+function saveSpeakers() {
+  localStorage.setItem(SPEAKERS_KEY, JSON.stringify(state.speakers));
+}
+
+function renderSpeakerChips() {
+  const container = document.getElementById('speaker-chips');
+  if (!container) return;
+
+  // 발화자 칩 렌더링 (관리자는 왕관 표시, 꾹 누르면 관리자 지정)
+  const chips = state.speakers.map((s, i) => {
+    const adminBadge = s.isAdmin ? '👑' : '';
+    return `
+      <div class="chip-option" oncontextmenu="return false;">
+        <input type="radio" name="speaker" id="speaker-${i}" value="${s.name}" required>
+        <label for="speaker-${i}" class="chip-label" data-speaker-index="${i}">${s.emoji} ${s.name} ${adminBadge}</label>
+      </div>
+    `;
+  }).join('');
+
+  // 추가 버튼
+  const addBtn = `
+    <div class="chip-option">
+      <button type="button" class="chip-label chip-add" id="btn-add-speaker">➕ 추가</button>
+    </div>
+  `;
+
+  container.innerHTML = chips + addBtn;
+
+  // 추가 버튼 이벤트
+  document.getElementById('btn-add-speaker').addEventListener('click', addSpeaker);
+
+  // 꾹 누르기(롱프레스)로 관리자 지정
+  container.querySelectorAll('.chip-label[data-speaker-index]').forEach(label => {
+    let pressTimer = null;
+    const idx = parseInt(label.dataset.speakerIndex);
+
+    label.addEventListener('touchstart', (e) => {
+      pressTimer = setTimeout(() => {
+        setAdmin(idx);
+      }, 600);
+    });
+    label.addEventListener('touchend', () => clearTimeout(pressTimer));
+    label.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+    // PC에서도 동작
+    label.addEventListener('mousedown', () => {
+      pressTimer = setTimeout(() => {
+        setAdmin(idx);
+      }, 600);
+    });
+    label.addEventListener('mouseup', () => clearTimeout(pressTimer));
+    label.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+  });
+
+  // 랜딩 자막 업데이트
+  updateHomeSubtitle();
+}
+
+function updateHomeSubtitle() {
+  const el = document.getElementById('home-subtitle');
+  if (!el) return;
+
+  const admin = state.speakers.find(s => s.isAdmin);
+  if (admin) {
+    el.innerHTML = `${admin.name}님네 가족의 소중한 대화를 기록하고<br>더 따뜻하게 소통해보아요! ✨`;
+  } else if (state.speakers.length > 0) {
+    el.innerHTML = `우리 가족의 소중한 대화를 기록하고<br>더 따뜻하게 소통해보아요! ✨`;
+  } else {
+    el.innerHTML = `가족을 추가하고<br>소통 기록을 시작해보세요! ✨`;
+  }
+}
+
+function addSpeaker() {
+  const name = prompt('추가할 가족 이름을 입력하세요');
+  if (!name || !name.trim()) return;
+
+  const trimmed = name.trim();
+
+  // 중복 체크
+  if (state.speakers.some(s => s.name === trimmed)) {
+    showToast('이미 있는 이름입니다', 'error');
+    return;
+  }
+
+  // 이모지 자동 배정
+  const emoji = DEFAULT_EMOJIS[state.speakers.length % DEFAULT_EMOJIS.length];
+
+  state.speakers.push({ name: trimmed, emoji, isAdmin: false });
+  saveSpeakers();
+  renderSpeakerChips();
+  showToast(`${emoji} ${trimmed} 추가! (꾹 누르면 관리자 지정)`, 'success');
+}
+
+function setAdmin(index) {
+  const speaker = state.speakers[index];
+  if (!speaker) return;
+
+  // 기존 관리자 해제 + 새로 지정
+  state.speakers.forEach(s => s.isAdmin = false);
+  speaker.isAdmin = true;
+
+  saveSpeakers();
+  renderSpeakerChips();
+  showToast(`${speaker.emoji} ${speaker.name}님이 관리자로 지정됨`, 'success');
+}
+
+function removeSpeaker(name) {
+  state.speakers = state.speakers.filter(s => s.name !== name);
+  saveSpeakers();
+  renderSpeakerChips();
+}
+
+// ============================================
+// 전체 초기화
+// ============================================
+function resetAllData() {
+  if (!confirm('모든 기록과 가족 목록이 삭제됩니다.\n정말 초기화할까요?')) return;
+  if (!confirm('⚠️ 되돌릴 수 없습니다. 진짜로 삭제할까요?')) return;
+
+  localStorage.removeItem('nabumalbutton_records');
+  localStorage.removeItem(SPEAKERS_KEY);
+
+  state.records = [];
+  state.speakers = [];
+
+  renderSpeakerChips();
+  updateTodayCount();
+  showToast('전체 초기화 완료', 'success');
+  navigateTo('home');
+}
+
+// ============================================
 // 데모 모드 (API 미설정 시)
 // ============================================
 function loadDemoData() {
@@ -533,12 +684,6 @@ function loadDemoData() {
     } catch (e) {
       state.records = [];
     }
-  }
-
-  // 데이터가 없으면 샘플 생성
-  if (state.records.length === 0) {
-    state.records = generateSampleData();
-    saveDemoData();
   }
 
   updateTodayCount();
@@ -627,35 +772,36 @@ function updateIndividualStats() {
   const gridEl = document.getElementById('individual-stats-grid');
   if (!gridEl) return;
 
-  const speakers = ['유회장', '용쌤', '고영주', '고영은'];
   const speakerStats = {};
 
-  // 초기화
-  speakers.forEach(s => {
-    speakerStats[s] = {
-      total: 0,
-      scores: [],
-      categories: {}
-    };
+  // 등록된 발화자 초기화
+  state.speakers.forEach(s => {
+    speakerStats[s.name] = { total: 0, scores: [], categories: {}, emoji: s.emoji };
   });
 
-  // 데이터 집계
+  // 데이터 집계 (등록 안 된 발화자도 포함)
   state.records.forEach(r => {
-    if (speakerStats[r.발화자]) {
-      speakerStats[r.발화자].total++;
-      speakerStats[r.발화자].scores.push(Number(r.감정점수));
-      speakerStats[r.발화자].categories[r.카테고리] = (speakerStats[r.발화자].categories[r.카테고리] || 0) + 1;
+    if (!speakerStats[r.발화자]) {
+      speakerStats[r.발화자] = { total: 0, scores: [], categories: {}, emoji: '👤' };
     }
+    speakerStats[r.발화자].total++;
+    speakerStats[r.발화자].scores.push(Number(r.감정점수));
+    speakerStats[r.발화자].categories[r.카테고리] = (speakerStats[r.발화자].categories[r.카테고리] || 0) + 1;
   });
 
   // 렌더링
-  gridEl.innerHTML = speakers.map(s => {
-    const stat = speakerStats[s];
+  const names = Object.keys(speakerStats);
+  if (names.length === 0) {
+    gridEl.innerHTML = '<div class="empty-state"><div class="message">가족을 추가하고 기록을 시작해보세요</div></div>';
+    return;
+  }
+
+  gridEl.innerHTML = names.map(name => {
+    const stat = speakerStats[name];
     const avgScore = stat.scores.length > 0
       ? (stat.scores.reduce((a, b) => a + b, 0) / stat.scores.length).toFixed(1)
       : '-';
 
-    // 가장 많이 나온 카테고리
     let topCategory = '-';
     let maxCount = 0;
     for (const cat in stat.categories) {
@@ -665,11 +811,9 @@ function updateIndividualStats() {
       }
     }
 
-    const emoji = s === '유회장' ? '👩' : s === '용쌤' ? '👨' : s === '고영주' ? '👧' : '👶';
-
     return `
       <div class="speaker-stat-card">
-        <div class="speaker-stat-name">${emoji} ${s}</div>
+        <div class="speaker-stat-name">${stat.emoji} ${name}</div>
         <div class="speaker-stat-total">${stat.total}<span class="unit">건</span></div>
         <div class="speaker-stat-meta">
           <div><span class="label">평균 강도:</span> ${avgScore}</div>
@@ -1022,6 +1166,5 @@ function showToast(message, type = '') {
 // 앱 초기화 및 시작
 // ============================================
 window.onload = () => {
-  console.log("🌸 부부 대화 분석 앱 - 유회장 & 용쌤 모드 🌸");
   loadData();
 };

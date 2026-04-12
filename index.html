@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="description" content="우리 가족의 소중한 대화를 기록하고 분석하여 더 행복한 소통을 만들어갑니다.">
-  <meta name="theme-color" content="#0f0f1a">
+  <meta name="theme-color" content="#fdfbf7">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>우리집 소통 버튼 - 따뜻한 우리 가족 기록</title>
@@ -27,8 +27,8 @@
     <section id="view-home" class="view home-view active">
       <div class="home-logo">🏡</div>
       <h1 class="home-title">우리집 소통 버튼</h1>
-      <p class="home-subtitle">
-        유회장님네 가족의 소중한 대화를 기록하고<br>
+      <p class="home-subtitle" id="home-subtitle">
+        우리 가족의 소중한 대화를 기록하고<br>
         더 따뜻하게 소통해보아요! ✨
       </p>
 
@@ -41,10 +41,14 @@
         오늘 기록: <strong id="today-count-value">0</strong>건
       </div>
 
-      <!-- 관리자 모드 버튼 -->
-      <button id="btn-admin-mode" class="btn-admin-mode" onclick="toggleAdminMode()">
-        🔒 관리자 오프
-      </button>
+      <div class="home-bottom-actions">
+        <button id="btn-admin-mode" class="btn-admin-mode" onclick="toggleAdminMode()">
+          🔒 관리자 오프
+        </button>
+        <button class="btn-reset" onclick="resetAllData()">
+          🗑️ 전체 초기화
+        </button>
+      </div>
     </section>
 
     <!-- ========================
@@ -59,28 +63,13 @@
       <form id="conflict-form" autocomplete="off">
         <!-- 발화자 (칩 스타일로 변경) -->
         <div class="form-group-compact">
-          <div class="speaker-chips">
-            <div class="chip-option">
-              <input type="radio" name="speaker" id="speaker-me" value="유회장" required>
-              <label for="speaker-me" class="chip-label">👩 유회장</label>
-            </div>
-            <div class="chip-option">
-              <input type="radio" name="speaker" id="speaker-spouse" value="용쌤">
-              <label for="speaker-spouse" class="chip-label">👨 용쌤</label>
-            </div>
-            <div class="chip-option">
-              <input type="radio" name="speaker" id="speaker-youngju" value="고영주">
-              <label for="speaker-youngju" class="chip-label">👧 고영주</label>
-            </div>
-            <div class="chip-option">
-              <input type="radio" name="speaker" id="speaker-youngun" value="고영은">
-              <label for="speaker-youngun" class="chip-label">👶 고영은</label>
-            </div>
+          <div class="speaker-chips" id="speaker-chips">
+            <!-- JS로 동적 렌더링 -->
           </div>
         </div>
 
         <div class="form-group-compact">
-          <textarea class="form-textarea-compact" id="content" name="content" placeholder="어떤 말이 오갔나요? (음성 입력 가능 🎤)"
+          <textarea class="form-textarea-compact" id="content" name="content" placeholder="어떤 말이 오갔나요?"
             required rows="3"></textarea>
         </div>
 
@@ -186,6 +175,12 @@
             <!-- JS로 동적 렌더링 -->
           </ul>
         </div>
+      </div>
+
+      <!-- 푸터 -->
+      <footer class="app-footer">
+        © 2026 <a href="https://mumuclass.kr" target="_blank">무궁무진클래스</a> · 용쌤
+      </footer>
     </section>
 
   </div><!-- /.app-container -->

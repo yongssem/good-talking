@@ -4,7 +4,7 @@
  * ============================================ */
 
 /* 폰트 가져오기 */
-@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
 /* CSS 변수 (디자인 토큰) */
 :root {
@@ -389,6 +389,19 @@ body::after {
   color: #fff;
   font-weight: 600;
   box-shadow: var(--shadow-md);
+}
+
+.chip-add {
+  border: 2px dashed #ccc;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  box-shadow: none;
+}
+
+.chip-add:active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
 }
 
 .form-textarea-compact {
@@ -918,8 +931,14 @@ body::after {
 }
 
 /* 관리자 모드 버튼 */
-.btn-admin-mode {
+.home-bottom-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
   margin-top: 16px;
+}
+
+.btn-admin-mode {
   padding: 8px 16px;
   background: #f1f3f5;
   border: 1px solid #dee2e6;
@@ -928,6 +947,23 @@ body::after {
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.btn-reset {
+  padding: 8px 16px;
+  background: #f1f3f5;
+  border: 1px solid #dee2e6;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-reset:active {
+  background: #fff5f5;
+  border-color: #ffa8a8;
+  color: #e03131;
 }
 
 .btn-admin-mode.active {
@@ -990,4 +1026,248 @@ body::after {
 .record-item {
   display: flex;
   align-items: center;
+}
+
+/* ========================
+   누락 스타일 보완
+   ======================== */
+
+/* 네비게이션 아이템 기본 */
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  font-family: inherit;
+  transition: color var(--transition-fast);
+}
+
+/* 기간 토글 */
+.period-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.period-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--bg-input);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.period-btn.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 차트 컨테이너 */
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-height: 280px;
+}
+
+/* 기록 리스트 */
+#records-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.record-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.record-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.record-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.record-score {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* 빈 상태 */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state .icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+
+.empty-state .message {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.empty-state .hint {
+  font-size: 0.85rem;
+}
+
+/* 토스트 알림 */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 12px 24px;
+  background: rgba(74, 74, 74, 0.92);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  font-family: inherit;
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  max-width: calc(100% - 48px);
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.toast.success {
+  background: rgba(160, 217, 149, 0.92);
+  color: #2b5a1e;
+}
+
+.toast.error {
+  background: rgba(255, 143, 163, 0.92);
+  color: #5c1a2a;
+}
+
+/* 로딩 스피너 */
+.loading-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 통계 헤더 */
+.stats-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.stats-header p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.summary-item .label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* 푸터 */
+.app-footer {
+  text-align: center;
+  padding: 24px 16px 16px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.app-footer a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+/* 모바일 터치 개선 */
+@media (hover: none) {
+  .btn-record:hover {
+    transform: none;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .stats-card:hover {
+    transform: none;
+  }
+
+  .category-btn:hover {
+    transform: none;
+  }
+}
+
+/* 작은 화면 대응 */
+@media (max-width: 360px) {
+  .home-title {
+    font-size: 1.8rem;
+  }
+
+  .btn-record {
+    width: 140px;
+    height: 140px;
+  }
+
+  .btn-record .icon {
+    font-size: 2.6rem;
+  }
+
+  .individual-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-bottom-actions {
+    flex-direction: column;
+    align-items: center;
+  }
 }
